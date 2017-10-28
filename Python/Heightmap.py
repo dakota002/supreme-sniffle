@@ -1,8 +1,7 @@
-import png, sys
+import png, sys, requests
 from datetime import datetime
 from noise import pnoise2, snoise2
 import random as rnd
-
 
 # For a world, octave at 8, freq at 256 * octave seems good,
 # but its fun to play with these
@@ -35,20 +34,3 @@ print(now)
 with open(now,'wb') as file:
     w = png.Writer(size,size,greyscale=True, bitdepth=16)
     w.write(file,rows)
-
-"""
-print("The pnoise function")
-row=[]
-now = datetime.now().isoformat().replace(":","").replace(".","")+"-"+str(freq)+"-frequency-"+str(octaves)+"-Octaves-pnoise-Image.png"
-for i in range(4096):
-    row = []
-    for j in range(4096):
-        row.append(int(pnoise2(j / freq, i / freq, octaves) * 32767.0 + 32768.0))
-    rows.append(row)
-
-print(now)
-
-with open(now,'wb') as file:
-    w = png.Writer(8192,8192,greyscale=True, bitdepth=16)
-    w.write(file,rows)
-"""

@@ -1,0 +1,5 @@
+/Python/*.txt
+/Python/*.pyc
+/Python/*.png
+/Python/__pycache__
+/Python/result.json

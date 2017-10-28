@@ -23,7 +23,7 @@ def GetMidRows(valList):
     return interRows
 
 def InterpolateWithMidrows(valList):
-    interRows = GetMidRows(valList):
+    interRows = GetMidRows(valList)
     for i in range(len(interRows)):
         valList.insert((2*i) + 1, interRows[i])
     return valList

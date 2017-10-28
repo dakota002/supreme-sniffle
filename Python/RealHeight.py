@@ -1,57 +1,70 @@
-import requests, ast, json, png
+import requests, ast, json, png, sys
 from math import sqrt, floor
 
-apiKey=sys.argv[1]
-geolocationKey = sys.argv[2]
+class RealHeight:
 
-geoUrl = "https://www.googleapis.com/geolocation/v1/geolocate?key={0}"
-location = requests.post(geoUrl.format(geolocationKey)).json()
+    def __init__(self,apiKey,specificLng=None,specificLat=None,fileName=None):
+        self.apiKey = apiKey
+        self.geoUrl = "https://www.googleapis.com/geolocation/v1/geolocate?key={0}".format(self.apiKey)
+        self.location = requests.post(self.geoUrl).json()
+        self.rootLng = self.location['location']['lng']
+        self.rootLat = self.location['location']['lat']
+        self.specificLocationsRequestUrl = "https://maps.googleapis.com/maps/api/elevation/json?locations={0},{1}&key={2}".format(self.rootLng,self.rootLat,self.apiKey)
+        self.manyLocationRequestUrl = "https://maps.googleapis.com/maps/api/elevation/json?locations={0}&key={1}"
+        print("Location is: ")
+        print(self.location['location'])
+        if (fileName!=None):
+            self.fileName = fileName
+        else:
+            self.fileName = ""
 
-print(location['location'])
-rootLng = location['location']['lng']
-rootLat = location['location']['lat']
+    def getHeight(self,url):
+        request=requests.get(url).json()
+        return request
 
-singleRequestUrl = "https://maps.googleapis.com/maps/api/elevation/json?locations={0},{1}&key={2}".format(rootLng,rootLat,apiKey)
-manyRequestUrl = "https://maps.googleapis.com/maps/api/elevation/json?locations={0}&key={1}"
+    def getGrid(self):
+        grid = []
+        result = []
+        for i in range(-100,101):
+            row = []
+            coords = []
+            for j in range(-100,101):
+                coords.append(str(self.rootLat+2*i/69)+','+str(self.rootLng + (2*j/69)))
+            grid.append("|".join(coords))
+        print(grid[0])
+        for i in grid:
+            newUrl = self.manyLocationRequestUrl.format(str(i),self.apiKey)
+            re = self.getHeight(newUrl)
+            for j in re['results']:
+                result.append(j['elevation'])\
+        self.heightGrid = result
+        with open("elevation.txt", "w+") as file:
+            file.write(json.dumps(result))
 
-def getHeight(url):
-    request=requests.get(url).json()
-    return request
+    def loadGridFromFile(self,fileName):
+        listVar = []
+        with open(fileName,'r+') as file:
+            listVar = file.readlines()
+        self.fileName = fileName
+        return ast.literal_eval(listVar[0])
 
-def getGrid(unformattedUrl,lat,lng,apiKey):
-    grid = []
-    result = []
-    for i in range(-100,101):
-        row = []
-        coords = []
-        for j in range(-100,101):
-            coords.append(str(lat+2*i/69)+','+str(lng + (2*j/69)))
-        grid.append("|".join(coords))
-    print(grid[0])
-    for i in grid:
-        newUrl = unformattedUrl.format(str(i),apiKey)
-        re = getHeight(newUrl)
-        for j in re['results']:
-            result.append(j['elevation'])
-    with open("elevation.txt", "w+") as file:
-        file.write(json.dumps(result))
-
-def loadGridFromFile(fileName):
-    listVar = []
-    with open(fileName,'r+') as file:
-        listVar = file.readlines()
-    return ast.literal_eval(listVar[0])
-
-def WritePNG(listOfVals):
-    minimum = min(listOfVals)
-    print(minimum)
-    sqrtSize = int(sqrt(len(listOfVals)))
-    rows=[]
-    for i in range(sqrtSize):
-        rows.append(list(int(floor(val))-minimum for val in listOfVals[i*sqrtSize:(i*sqrtSize)+sqrtSize]))
-    if (len(rows)==sqrtSize):
-        with open('myPng.png','wb') as file:
-            w = png.Writer(sqrtSize,sqrtSize,greyscale=True,bitdepth=16)
-            w.write(file,rows)
-    else:
-        print("Not right dim")
+    def WritePNG(self,listOfVals):
+        minimum = min(min(listOfVals))
+        sqrtSize = len(listOfVals)
+        rows=[]
+        print('fuck')
+        print(sqrtSize)
+        print('me')
+        for i in range(sqrtSize):
+            print(i)
+            newThing = []
+            #for j in range(sqrtSize):
+            #    newThing.append(int(floor(listOfVals[i][j]-minimum)))
+            #rows.append(newThing)
+            rows.append(list(int(floor(val-minimum)) for val in listOfVals[i*sqrtSize:(i*sqrtSize)+sqrtSize]))
+        if (len(rows)==sqrtSize):
+            with open('myPng.png','wb') as file:
+                w = png.Writer(sqrtSize,sqrtSize,greyscale=True,bitdepth=16)
+                w.write(file,rows)
+        else:
+            print("Not right dim")
