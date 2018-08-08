@@ -36,7 +36,7 @@ class RealHeight:
             newUrl = self.manyLocationRequestUrl.format(str(i),self.apiKey)
             re = self.getHeight(newUrl)
             for j in re['results']:
-                result.append(j['elevation'])\
+                result.append(j['elevation'])
         self.heightGrid = result
         with open("elevation.txt", "w+") as file:
             file.write(json.dumps(result))
