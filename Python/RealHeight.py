@@ -1,6 +1,10 @@
 import requests, ast, json, png, sys
 from math import sqrt, floor
 
+
+apiBaseUrl = "https://maps.googleapis.com/maps/api/elevation/json?locations="
+
+
 class RealHeight:
 
     def __init__(self,apiKey,specificLng=None,specificLat=None,fileName=None):
@@ -9,8 +13,9 @@ class RealHeight:
         self.location = requests.post(self.geoUrl).json()
         self.rootLng = self.location['location']['lng']
         self.rootLat = self.location['location']['lat']
-        self.specificLocationsRequestUrl = "https://maps.googleapis.com/maps/api/elevation/json?locations={0},{1}&key={2}".format(self.rootLng,self.rootLat,self.apiKey)
-        self.manyLocationRequestUrl = "https://maps.googleapis.com/maps/api/elevation/json?locations={0}&key={1}"
+        self.specificLocationsRequestUrl = apiBaseUrl + "{0},{1}&key={2}".format(self.rootLng,self.rootLat,self.apiKey)
+        self.manyLocationRequestUrl = apiBaseUrl + "{0}&key={1}"
+        self.pathUrl = apiBaseUrl + "lat|long"
         print("Location is: ")
         print(self.location['location'])
         if (fileName!=None):
@@ -41,6 +46,12 @@ class RealHeight:
         with open("elevation.txt", "w+") as file:
             file.write(json.dumps(result))
 
+    def getPath(self, distanceRange):
+        for i in range(distanceRange):
+            startPoint = ""
+            endPoint = ""
+            pathUrl = self.pathUrl.replace("lat",startPoint).replace("long",endPoint)
+
     def loadGridFromFile(self,fileName):
         listVar = []
         with open(fileName,'r+') as file:
@@ -68,3 +79,6 @@ class RealHeight:
                 w.write(file,rows)
         else:
             print("Not right dim")
+
+if __name__ == "__main__":
+    rh = RealHeight("AIzaSyBrlQwg8zyGnho8rHSREWdeMUXNiE2b12E")
